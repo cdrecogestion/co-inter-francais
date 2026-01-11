@@ -1,0 +1,462 @@
+import React, { useState } from 'react';
+import { Trophy, Star, Zap } from 'lucide-react';
+
+const QuizGATL = () => {
+  const [currentView, setCurrentView] = useState('rules');
+  const [currentMystery, setCurrentMystery] = useState(null);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [scores, setScores] = useState({
+    'Équipe 1': 0,
+    'Équipe 2': 0,
+    'Équipe 3': 0,
+    'Équipe 4': 0,
+    'Équipe 5': 0,
+    'Équipe 6': 0
+  });
+  const [jokers, setJokers] = useState({
+    'Équipe 1': true,
+    'Équipe 2': true,
+    'Équipe 3': true,
+    'Équipe 4': true,
+    'Équipe 5': true,
+    'Équipe 6': true
+  });
+
+  const mysteryQuestions = [
+    {
+      title: "Question Mystère 1 : Bon de livraison incomplet",
+      situation: "Vous êtes en stage dans un entrepôt logistique. Un chauffeur-livreur arrive avec des palettes de marchandises. En vérifiant le bon de livraison, vous constatez que 3 cartons manquent par rapport à ce qui est indiqué sur le document. Le chauffeur insiste pour que vous signiez quand même.",
+      consigne: "Sur votre feuille, listez 5 actions concrètes à faire DANS L'ORDRE pour gérer cette situation. Vous avez 3 minutes.",
+      criteres: ["Ne pas signer immédiatement", "Vérifier une deuxième fois", "Informer le chauffeur du problème", "Noter 'Reçu avec réserve : 3 cartons manquants'", "Prévenir son tuteur/responsable"],
+      reponse: "1. Ne pas signer le bon de livraison immédiatement\n2. Vérifier une deuxième fois le nombre de cartons (recompter)\n3. Informer le chauffeur du problème constaté (manque 3 cartons)\n4. Noter sur le bon de livraison 'Reçu avec réserve : 3 cartons manquants'\n5. Prévenir immédiatement son tuteur/responsable de l'anomalie"
+    },
+    {
+      title: "Question Mystère 2 : Organisation d'expéditions",
+      situation: "Vous travaillez dans un service d'expédition. Ce matin, vous devez préparer 4 commandes urgentes :\n- Commande A : 50 kg, livraison avant 10h en centre-ville de Papeete (client prioritaire)\n- Commande B : 200 kg, livraison avant 14h en zone industrielle\n- Commande C : 15 kg, livraison express avant 12h à l'aéroport de Tahiti-Faa'a\n- Commande D : 100 kg, livraison dans la journée (pas d'heure précise)\n\nIl est 8h. Vous avez un seul chauffeur et un camion disponibles.",
+      consigne: "Sur votre feuille, dans quel ordre organisez-vous les livraisons ? Justifiez vos choix. Vous avez 3 minutes.",
+      criteres: ["Respect des délais/urgences ✓", "Optimisation du trajet ✓", "Justification logique ✓"],
+      reponse: "Ordre de livraison recommandé :\n1. Commande A (10h, centre-ville Papeete, client prioritaire) - URGENCE + PRIORITÉ\n2. Commande C (12h, aéroport Faa'a, express) - DÉLAI COURT\n3. Commande B (14h, zone industrielle) - DÉLAI MOYEN\n4. Commande D (dans la journée) - PAS DE DÉLAI PRÉCIS\n\nJustification : On respecte les délais les plus serrés en premier, en tenant compte de l'importance du client et des horaires limites."
+    },
+    {
+      title: "Question Mystère 3 : Email professionnel transport",
+      situation: "Vous êtes en stage dans une entreprise de transport. Un client, M. Legrand (société DELTALOG), vous a envoyé un email ce matin pour savoir où se trouve sa marchandise expédiée il y a 3 jours (référence commande : TR-2024-4589). Vous avez vérifié : le colis est bloqué à la plateforme de Papeete à cause d'une erreur d'adresse. Livraison prévue demain au lieu d'aujourd'hui.",
+      consigne: "Sur votre feuille, rédigez l'email de réponse complet (objet + corps du message). Vous avez 3 minutes.",
+      criteres: ["Objet clair ✓", "Formule de politesse d'ouverture ✓", "Explication du retard ✓", "Nouvelle date de livraison ✓", "Excuses si nécessaire ✓", "Formule de clôture + signature ✓"],
+      reponse: "Objet : Suivi de votre commande TR-2024-4589\n\nMonsieur Legrand,\n\nNous avons bien reçu votre demande concernant le suivi de votre commande référence TR-2024-4589.\n\nAprès vérification, nous vous informons que votre colis est actuellement à notre plateforme de Papeete. Un problème d'adresse de livraison a malheureusement retardé l'acheminement.\n\nNous vous prions de nous excuser pour ce désagrément. Votre livraison est désormais prévue demain [date].\n\nRestant à votre disposition pour toute information complémentaire.\n\nCordialement,\n[Votre prénom nom]\nStagiaire - [Nom de l'entreprise]"
+    },
+    {
+      title: "Question Mystère 4 : Accident de manutention",
+      situation: "Pendant le chargement d'un camion, vous faites tomber une palette avec votre transpalette. Plusieurs cartons sont endommagés. Votre tuteur n'est pas dans l'entrepôt à ce moment-là. Personne d'autre n'a vu l'incident.",
+      consigne: "Sur votre feuille, expliquez ce que vous faites étape par étape. Vous avez 3 minutes.",
+      criteres: ["Honnêteté (prévenir malgré l'absence de témoin) ✓", "Sécurisation de la zone ✓", "Évaluation des dégâts ✓", "Information du responsable ✓", "Proposition de solution ✓"],
+      reponse: "1. Sécuriser immédiatement la zone (arrêter le transpalette, baliser si nécessaire)\n2. Vérifier qu'il n'y a pas de danger (produits dangereux, fuite, risque pour autrui)\n3. Évaluer l'étendue des dégâts (compter les cartons abîmés, noter les références)\n4. Chercher et prévenir le tuteur/responsable IMMÉDIATEMENT (même si personne n'a vu)\n5. Remplir un rapport d'incident si l'entreprise en a\n6. Proposer une solution (réparation, remplacement, tri des produits récupérables)\n\nIMPORTANT : L'honnêteté est essentielle, même sans témoin. C'est une question de professionnalisme et de confiance."
+    },
+    {
+      title: "Question Mystère 5 : Message de transmission",
+      situation: "Vous travaillez en équipe matin (6h-14h) dans un entrepôt. Juste avant de partir à 14h, un transporteur appelle pour dire qu'il ne pourra PAS venir chercher la palette P-7845 prévue à 15h (vous partez dans 10 minutes). Il viendra demain à 10h à la place. Cette palette est déjà préparée en zone d'expédition. Votre collègue de l'équipe après-midi arrive dans 5 minutes.",
+      consigne: "Sur votre feuille, écrivez le message de transmission que vous laissez dans le cahier de liaison. Vous avez 3 minutes.",
+      criteres: ["Identification de la palette ✓", "Explication du changement ✓", "Nouvelle heure de collecte ✓", "Localisation actuelle de la palette ✓", "Action attendue (ou pas d'action) ✓", "Clarté et concision ✓"],
+      reponse: "CAHIER DE LIAISON - 10/01/2026 - 14h00\n\nIMPORTANT : Collecte palette P-7845 ANNULÉE\n\nAppel du transporteur à 13h50 :\n- Palette P-7845 ne sera PAS collectée cet après-midi (initialement prévue 15h)\n- NOUVELLE collecte : demain 10h00\n- Palette actuellement en zone d'expédition (prête)\n- Aucune action requise, juste laisser la palette en place\n\n[Signature]"
+    },
+    {
+      title: "Question Mystère 6 : Inventaire et contrôle",
+      situation: "Votre tuteur vous demande de contrôler un arrivage de 120 cartons référence 'ELEC-442'. Sur le bon de livraison, il est écrit : 120 cartons de 10 kg chacun. En pesant quelques cartons au hasard, vous constatez qu'ils font 8 kg au lieu de 10 kg.",
+      consigne: "Sur votre feuille, que faites-vous ? Listez toutes les étapes. Vous avez 3 minutes.",
+      criteres: ["Peser plusieurs autres cartons pour confirmer ✓", "Ne pas valider la réception sans vérification complète ✓", "Prévenir le tuteur/responsable ✓", "Signaler l'anomalie sur le bon de livraison ✓", "Contacter éventuellement le fournisseur ✓"],
+      reponse: "1. Peser plusieurs autres cartons (au moins 5-10) pour confirmer l'anomalie\n2. NE PAS valider la réception ni signer le bon de livraison\n3. Prévenir immédiatement le tuteur/responsable de l'anomalie constatée\n4. Noter sur le bon de livraison : 'Reçu avec réserve - Poids non conforme : 8 kg constatés au lieu de 10 kg annoncés'\n5. Prendre des photos si possible (cartons + balance)\n6. Le responsable décidera de contacter le fournisseur\n7. Attendre les instructions avant de stocker la marchandise"
+    },
+    {
+      title: "Question Mystère 7 : Accueil téléphonique",
+      situation: "Vous êtes en stage au secrétariat d'une entreprise de transport. Le téléphone sonne. C'est un client qui cherche à joindre M. Teriierooiterai, le responsable commercial. Celui-ci est absent toute la journée (en déplacement à Moorea). Le client dit que c'est urgent, il attend un devis depuis 3 jours.",
+      consigne: "Sur votre feuille, écrivez mot pour mot ce que vous dites au téléphone, du début à la fin de l'appel. Vous avez 3 minutes.",
+      criteres: ["Formule d'accueil professionnelle (nom de l'entreprise) ✓", "Écoute active du besoin ✓", "Explication de l'absence ✓", "Proposition de solution (message, rappel, autre contact) ✓", "Prise de coordonnées si nécessaire ✓", "Formule de clôture polie ✓"],
+      reponse: "«[Nom de l'entreprise], bonjour !\n\nOui bien sûr, c'est à quel sujet s'il vous plaît ?\n\n[Écoute du client]\n\nJe comprends, c'est effectivement urgent. Malheureusement, M. Teriierooiterai est en déplacement à Moorea aujourd'hui et ne sera pas joignable avant demain.\n\nJe peux vous proposer plusieurs solutions :\n- Soit je prends un message détaillé que je lui transmets dès ce soir par email\n- Soit je vous donne ses coordonnées pour qu'il vous rappelle en priorité demain matin\n- Soit je vous mets en relation avec un autre commercial qui pourrait peut-être vous aider\n\nQue préférez-vous ?\n\n[Selon réponse : noter coordonnées, nom, numéro, objet de l'appel]\n\nTrès bien, je fais le nécessaire. Vous serez recontacté demain matin au plus tard.\n\nBonne journée, au revoir !»"
+    },
+    {
+      title: "Question Mystère 8 : Classement de documents",
+      situation: "Vous devez classer 8 documents qui sont en désordre sur le bureau :\n- Facture n°145 du 15/12/2024 (société MANUIA)\n- Bon de commande n°89 du 10/12/2024 (société MANUIA)\n- Facture n°146 du 20/12/2024 (société PACIFIQUE EXPORT)\n- Bon de livraison n°201 du 12/12/2024 (société MANUIA)\n- Devis n°56 du 05/12/2024 (société TAHITI LOGISTIQUE)\n- Facture n°147 du 22/12/2024 (société MANUIA)\n- Bon de commande n°90 du 18/12/2024 (société PACIFIQUE EXPORT)\n- Bon de livraison n°202 du 21/12/2024 (société PACIFIQUE EXPORT)",
+      consigne: "Sur votre feuille, proposez un système de classement logique (par quoi vous classez en priorité ? puis en second ?). Expliquez votre choix. Vous avez 3 minutes.",
+      criteres: ["Méthode de classement claire (par client ? par date ? par type de document ?) ✓", "Logique professionnelle ✓", "Explication de la méthode ✓"],
+      reponse: "Méthode recommandée : CLASSEMENT PAR CLIENT puis PAR DATE\n\nDossier MANUIA :\n- Bon de commande n°89 (10/12)\n- Bon de livraison n°201 (12/12)\n- Facture n°145 (15/12)\n- Facture n°147 (22/12)\n\nDossier PACIFIQUE EXPORT :\n- Bon de commande n°90 (18/12)\n- Facture n°146 (20/12)\n- Bon de livraison n°202 (21/12)\n\nDossier TAHITI LOGISTIQUE :\n- Devis n°56 (05/12)\n\nJustification : Ce classement permet de retrouver facilement tous les documents d'un même client et de suivre la chronologie de chaque commande (devis → bon de commande → bon de livraison → facture).\n\nAUTRE MÉTHODE ACCEPTABLE : Par type de document (tous les devis ensemble, tous les bons de commande ensemble, etc.) puis par date."
+    },
+    {
+      title: "Question Mystère 9 : Vérification de facture",
+      situation: "Vous recevez une facture d'un fournisseur (TAHITI FOURNITURES) pour du matériel de bureau. Voici ce qui est écrit :\n- 10 ramettes de papier A4 à 850 XPF l'unité = 8 500 XPF\n- 5 boîtes de stylos à 1 200 XPF la boîte = 6 000 XPF\n- 2 agrafeuses à 2 500 XPF l'unité = 5 000 XPF\n- TOTAL HT : 20 500 XPF\n- TVA (5%) : 1 025 XPF\n- TOTAL TTC : 21 525 XPF",
+      consigne: "Sur votre feuille, vérifiez tous les calculs. Y a-t-il une erreur ? Si oui, laquelle ? Quel est le bon montant ? Vous avez 3 minutes.",
+      criteres: ["Vérification des multiplications ✓", "Vérification du total HT ✓", "Vérification de la TVA ✓", "Identification de l'erreur ✓", "Calcul correct du bon montant ✓"],
+      reponse: "VÉRIFICATION :\n\n✓ 10 × 850 = 8 500 XPF (CORRECT)\n✓ 5 × 1 200 = 6 000 XPF (CORRECT)\n✓ 2 × 2 500 = 5 000 XPF (CORRECT)\n\n❌ TOTAL HT = 8 500 + 6 000 + 5 000 = 19 500 XPF (et NON 20 500 XPF)\n\nERREUR DÉTECTÉE : Le total HT est faux !\n\nCALCULS CORRECTS :\n- Total HT : 19 500 XPF\n- TVA 5% : 19 500 × 0,05 = 975 XPF\n- Total TTC : 19 500 + 975 = 20 475 XPF\n\nLa facture comporte une erreur de 1 000 XPF sur le total HT, ce qui fausse ensuite la TVA et le total TTC.\n\nACTION : Contacter le fournisseur pour demander une facture rectificative."
+    },
+    {
+      title: "Question Mystère 10 : Agenda et organisation",
+      situation: "Vous gérez l'agenda de votre responsable, Mme Tevaite. Ce matin, vous recevez 4 demandes de rendez-vous pour demain (jeudi) :\n- Un fournisseur veut venir à 9h (durée : 1h)\n- Un client important demande 10h30 (durée : 45 min)\n- Une réunion d'équipe hebdomadaire est prévue à 14h (durée : 1h30)\n- Un auditeur doit passer à 10h pour un contrôle (durée : 2h)\n\nL'agenda actuel de Mme Tevaite demain :\n- 9h-10h : LIBRE\n- 10h-12h : LIBRE\n- 12h-13h30 : Pause déjeuner (BLOQUÉ)\n- 13h30-17h : LIBRE\n- Elle part à 17h (non négociable)",
+      consigne: "Sur votre feuille, organisez l'agenda de demain. Certains rendez-vous ne peuvent pas tous être acceptés. Lesquels acceptez-vous ? À quelle heure ? Lequel refusez-vous ou reportez-vous ? Justifiez. Vous avez 3 minutes.",
+      criteres: ["Priorisation logique (auditeur = prioritaire, client important) ✓", "Respect des créneaux disponibles ✓", "Gestion des incompatibilités horaires ✓", "Justification des choix ✓"],
+      reponse: "AGENDA ORGANISÉ :\n\n✓ 10h-12h : AUDITEUR (2h) - PRIORITÉ ABSOLUE (contrôle obligatoire)\n✓ 14h-15h30 : RÉUNION D'ÉQUIPE (1h30) - Déjà planifiée\n✓ 15h30-16h15 : CLIENT IMPORTANT (45 min) - Décalé mais accepté\n❌ 9h-10h : FOURNISSEUR - À REPORTER\n\nJUSTIFICATION :\n- L'auditeur est PRIORITAIRE (contrôle légal/obligatoire)\n- La réunion d'équipe était déjà prévue (engagement pris)\n- Le client important peut être décalé à 15h30 (toujours dans la journée)\n- Le fournisseur doit être reporté car impossible de le caser (le créneau 9h-10h est trop court pour finir avant l'auditeur à 10h)\n\nACTION : Appeler le fournisseur pour proposer un autre jour."
+    }
+  ];
+
+  const showRandomMystery = () => {
+    const randomIndex = Math.floor(Math.random() * mysteryQuestions.length);
+    setCurrentMystery(mysteryQuestions[randomIndex]);
+    setShowAnswer(false);
+    setCurrentView('mystery');
+  };
+
+  const addPoints = (team, points) => {
+    setScores(prev => ({...prev, [team]: prev[team] + points}));
+  };
+
+  const useJoker = (team) => {
+    setJokers(prev => ({...prev, [team]: false}));
+  };
+
+  const resetScores = () => {
+    setScores({
+      'Équipe 1': 0,
+      'Équipe 2': 0,
+      'Équipe 3': 0,
+      'Équipe 4': 0,
+      'Équipe 5': 0,
+      'Équipe 6': 0
+    });
+    setJokers({
+      'Équipe 1': true,
+      'Équipe 2': true,
+      'Équipe 3': true,
+      'Équipe 4': true,
+      'Équipe 5': true,
+      'Équipe 6': true
+    });
+  };
+
+  const sortedTeams = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold text-white mb-2 flex items-center justify-center gap-3">
+            <Trophy className="w-12 h-12" />
+            BATTLE QUIZ STAGE
+            <Trophy className="w-12 h-12" />
+          </h1>
+          <p className="text-2xl text-white font-semibold">BAC PRO GATL - Le stagiaire parfait</p>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex gap-4 mb-6 justify-center flex-wrap">
+          <button
+            onClick={() => setCurrentView('rules')}
+            className={`px-6 py-3 rounded-lg font-bold text-lg ${
+              currentView === 'rules' 
+                ? 'bg-white text-purple-600' 
+                : 'bg-purple-800 text-white hover:bg-purple-700'
+            }`}
+          >
+            📋 RÈGLES DU JEU
+          </button>
+          <button
+            onClick={() => setCurrentView('scores')}
+            className={`px-6 py-3 rounded-lg font-bold text-lg ${
+              currentView === 'scores' 
+                ? 'bg-white text-purple-600' 
+                : 'bg-purple-800 text-white hover:bg-purple-700'
+            }`}
+          >
+            🏆 SCORES
+          </button>
+          <button
+            onClick={showRandomMystery}
+            className="px-6 py-3 rounded-lg font-bold text-lg bg-pink-600 text-white hover:bg-pink-700 animate-pulse"
+          >
+            ⭐ QUESTION MYSTÈRE
+          </button>
+          <button
+            onClick={() => setCurrentView('podium')}
+            className={`px-6 py-3 rounded-lg font-bold text-lg ${
+              currentView === 'podium' 
+                ? 'bg-white text-purple-600' 
+                : 'bg-purple-800 text-white hover:bg-purple-700'
+            }`}
+          >
+            🥇 PODIUM
+          </button>
+        </div>
+
+        {/* Rules View */}
+        {currentView === 'rules' && (
+          <div className="bg-white rounded-3xl p-8 shadow-2xl">
+            <h2 className="text-4xl font-bold text-purple-600 mb-6 text-center">⚡ RÈGLES DU JEU ⚡</h2>
+            
+            <div className="space-y-6">
+              <div className="bg-blue-50 p-6 rounded-xl border-l-8 border-blue-500">
+                <h3 className="text-2xl font-bold text-blue-700 mb-3">📢 COMMENT ÇA MARCHE ?</h3>
+                <ul className="space-y-2 text-lg text-gray-800">
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-blue-600">1.</span>
+                    <span>Une question est posée</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-blue-600">2.</span>
+                    <span><strong>30 secondes</strong> de concertation en groupe</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-blue-600">3.</span>
+                    <span><strong>✋ Le rapporteur LÈVE LA MAIN</strong> pour répondre</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-blue-600">4.</span>
+                    <span>Si l'équipe se trompe, on passe à une autre équipe</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-green-50 p-6 rounded-xl border-l-8 border-green-500">
+                <h3 className="text-2xl font-bold text-green-700 mb-3">🎯 POINTS</h3>
+                <div className="space-y-3 text-lg">
+                  <div className="flex items-center gap-3">
+                    <span className="bg-green-500 text-white font-bold px-4 py-2 rounded-full text-xl">+2</span>
+                    <span className="text-gray-800">Bonne réponse</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="bg-green-600 text-white font-bold px-4 py-2 rounded-full text-xl">+1</span>
+                    <span className="text-gray-800">Bonus justification avec vocabulaire pro</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 p-6 rounded-xl border-l-8 border-purple-500">
+                <h3 className="text-2xl font-bold text-purple-700 mb-3 flex items-center gap-2">
+                  <Zap className="w-7 h-7" />
+                  SPÉCIAL
+                </h3>
+                <div className="space-y-3 text-lg text-gray-800">
+                  <div className="bg-purple-100 p-4 rounded-lg">
+                    <p className="font-bold text-purple-700 mb-2">🃏 JOKER "DOUBLE POINTS"</p>
+                    <p>Chaque équipe peut l'utiliser UNE FOIS sur la question de son choix</p>
+                  </div>
+                  <div className="bg-pink-100 p-4 rounded-lg">
+                    <p className="font-bold text-pink-700 mb-2">⭐ QUESTION MYSTÈRE</p>
+                    <p>En milieu de partie : <strong>5 POINTS</strong> à gagner sur une mise en situation complexe !</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 p-6 rounded-xl border-l-8 border-yellow-500">
+                <h3 className="text-2xl font-bold text-yellow-700 mb-3">🏆 RÉCOMPENSE FINALE</h3>
+                <p className="text-lg text-gray-800">
+                  L'équipe gagnante choisit les <strong>3 CONSEILS ESSENTIELS</strong> pour réussir son stage 
+                  qui seront notés au tableau pour toute la classe !
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Scores View */}
+        {currentView === 'scores' && (
+          <div className="bg-white rounded-3xl p-8 shadow-2xl">
+            <h2 className="text-4xl font-bold text-purple-600 mb-6 text-center">📊 TABLEAU DES SCORES</h2>
+            
+            <div className="grid grid-cols-2 gap-6 mb-6">
+              {Object.entries(scores).map(([team, score]) => (
+                <div key={team} className="bg-gradient-to-r from-purple-100 to-blue-100 p-6 rounded-xl shadow-lg">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-2xl font-bold text-purple-700">{team}</h3>
+                    {jokers[team] && (
+                      <span className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                        <Zap className="w-4 h-4" /> JOKER
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="text-5xl font-bold text-center text-purple-600 mb-4">{score}</div>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => addPoints(team, 2)}
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg"
+                    >
+                      +2
+                    </button>
+                    <button
+                      onClick={() => addPoints(team, 1)}
+                      className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg"
+                    >
+                      +1
+                    </button>
+                    <button
+                      onClick={() => addPoints(team, 5)}
+                      className="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-lg"
+                    >
+                      +5
+                    </button>
+                    {jokers[team] && (
+                      <button
+                        onClick={() => useJoker(team)}
+                        className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 rounded-lg"
+                      >
+                        🃏
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={resetScores}
+              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-lg text-xl"
+            >
+              🔄 RÉINITIALISER LES SCORES
+            </button>
+          </div>
+        )}
+
+        {/* Mystery Question View */}
+        {currentView === 'mystery' && currentMystery && (
+          <div className="bg-white rounded-3xl p-8 shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="inline-block bg-gradient-to-r from-pink-500 to-purple-500 text-white px-8 py-4 rounded-full text-3xl font-bold mb-4 animate-pulse">
+                ⭐ QUESTION MYSTÈRE - 5 POINTS ⭐
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-pink-50 to-purple-50 p-8 rounded-2xl border-4 border-pink-300 mb-6">
+              <h2 className="text-3xl font-bold text-purple-700 mb-6">{currentMystery.title}</h2>
+              
+              <div className="bg-white p-6 rounded-xl mb-6 border-l-8 border-purple-500">
+                <h3 className="text-xl font-bold text-purple-600 mb-3">📋 SITUATION :</h3>
+                <p className="text-lg text-gray-800 whitespace-pre-line">{currentMystery.situation}</p>
+              </div>
+
+              <div className="bg-pink-100 p-6 rounded-xl mb-6 border-l-8 border-pink-500">
+                <h3 className="text-xl font-bold text-pink-700 mb-3">✏️ CONSIGNE :</h3>
+                <p className="text-lg font-semibold text-gray-800">{currentMystery.consigne}</p>
+              </div>
+
+              <div className="bg-purple-100 p-6 rounded-xl border-l-8 border-purple-500">
+                <h3 className="text-xl font-bold text-purple-700 mb-3">🎯 CRITÈRES D'ÉVALUATION :</h3>
+                <ul className="space-y-2">
+                  {currentMystery.criteres.map((critere, index) => (
+                    <li key={index} className="text-lg text-gray-800 flex items-start gap-2">
+                      <span className="text-purple-600 font-bold">•</span>
+                      <span>{critere}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex gap-4 justify-center mb-6">
+              <button
+                onClick={() => setShowAnswer(!showAnswer)}
+                className="px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold text-xl rounded-lg"
+              >
+                {showAnswer ? '🔒 MASQUER LA RÉPONSE' : '✅ AFFICHER LA RÉPONSE'}
+              </button>
+            </div>
+
+            {showAnswer && (
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl border-4 border-green-400 mb-6">
+                <h3 className="text-2xl font-bold text-green-700 mb-4 flex items-center gap-2">
+                  <span>✅</span> RÉPONSE ATTENDUE
+                </h3>
+                <div className="bg-white p-6 rounded-xl">
+                  <p className="text-lg text-gray-800 whitespace-pre-line leading-relaxed">{currentMystery.reponse}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => setCurrentView('scores')}
+                className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xl rounded-lg"
+              >
+                Retour aux SCORES
+              </button>
+              <button
+                onClick={showRandomMystery}
+                className="px-8 py-4 bg-pink-600 hover:bg-pink-700 text-white font-bold text-xl rounded-lg"
+              >
+                🔄 Autre question mystère
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Podium View */}
+        {currentView === 'podium' && (
+          <div className="bg-white rounded-3xl p-8 shadow-2xl">
+            <h2 className="text-4xl font-bold text-purple-600 mb-8 text-center">🏆 PODIUM FINAL 🏆</h2>
+            
+            <div className="flex items-end justify-center gap-8 mb-8">
+              {/* 2nd place */}
+              {sortedTeams[1] && (
+                <div className="text-center">
+                  <div className="bg-gray-300 rounded-t-3xl p-8 h-48 flex flex-col justify-end items-center shadow-xl">
+                    <div className="text-6xl mb-2">🥈</div>
+                    <div className="text-2xl font-bold text-gray-700">{sortedTeams[1][0]}</div>
+                    <div className="text-4xl font-bold text-gray-800">{sortedTeams[1][1]} pts</div>
+                  </div>
+                  <div className="bg-gray-400 h-3 rounded-b-lg"></div>
+                </div>
+              )}
+
+              {/* 1st place */}
+              {sortedTeams[0] && (
+                <div className="text-center">
+                  <div className="bg-gradient-to-b from-yellow-300 to-yellow-400 rounded-t-3xl p-8 h-64 flex flex-col justify-end items-center shadow-2xl border-4 border-yellow-500">
+                    <Star className="w-16 h-16 text-yellow-600 mb-2 animate-pulse" />
+                    <div className="text-7xl mb-2">🥇</div>
+                    <div className="text-3xl font-bold text-yellow-900">{sortedTeams[0][0]}</div>
+                    <div className="text-5xl font-bold text-yellow-800">{sortedTeams[0][1]} pts</div>
+                  </div>
+                  <div className="bg-yellow-500 h-4 rounded-b-lg"></div>
+                </div>
+              )}
+
+              {/* 3rd place */}
+              {sortedTeams[2] && (
+                <div className="text-center">
+                  <div className="bg-orange-300 rounded-t-3xl p-8 h-40 flex flex-col justify-end items-center shadow-xl">
+                    <div className="text-5xl mb-2">🥉</div>
+                    <div className="text-xl font-bold text-orange-700">{sortedTeams[2][0]}</div>
+                    <div className="text-3xl font-bold text-orange-800">{sortedTeams[2][1]} pts</div>
+                  </div>
+                  <div className="bg-orange-400 h-3 rounded-b-lg"></div>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-purple-50 p-6 rounded-xl">
+              <h3 className="text-2xl font-bold text-purple-700 mb-4 text-center">
+                🎯 Les 3 conseils essentiels choisis par les gagnants
+              </h3>
+              <div className="space-y-3">
+                <div className="bg-white p-4 rounded-lg border-l-4 border-purple-500">
+                  <p className="text-lg text-gray-600">1. _______________________________</p>
+                </div>
+                <div className="bg-white p-4 rounded-lg border-l-4 border-purple-500">
+                  <p className="text-lg text-gray-600">2. _______________________________</p>
+                </div>
+                <div className="bg-white p-4 rounded-lg border-l-4 border-purple-500">
+                  <p className="text-lg text-gray-600">3. _______________________________</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 text-center">
+              <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+                👏 BRAVO À TOUS LES PARTICIPANTS ! 👏
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default QuizGATL;
